@@ -1,11 +1,7 @@
-# This file wont do us much good in this location, make sure you change the path as directed to continue!
+name: Node CD
 
-name: Node CI
+on: [push]
 
-on:
-  push:
-    paths:
-      - "**Dockerfile**"
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -44,3 +40,23 @@ jobs:
           npm test
         env:
           CI: true
+  
+  build-docker-image:
+    name: Build and store docker image in github packages
+    runs-on: ubuntu-lastest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Download built artifacts
+        uses: actions/download-artifact@main
+        with:
+          name: webpack artifacts
+          path: public
+      - name: Build container image
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{github.actor}}
+          password: ${{github.token}}
+          registry: docker.pkg.github.com
+          repository: nhat-tong/github-actions-for-packages/tic-tac-toe
+          tag_with_sha: true
